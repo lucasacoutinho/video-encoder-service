@@ -1,0 +1,16 @@
+{
+	"name": "Video Encoder Service",
+	"dockerComposeFile": "../docker-compose.yml",
+	"service": "video-encoder-service-app",
+    "remoteUser": "root",
+    "workspaceFolder": "/go/src",
+	"customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.Go",
+                "GitHub.copilot-chat",
+                "GitHub.copilot-nightly"
+            ]
+        }
+    }
+}

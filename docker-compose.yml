@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  video-encoder-service-app:
+    build: .
+    volumes:
+      - .:/go/src
+    env_file:
+      - .env
+    networks:
+      - video-encoder-network
+    depends_on:
+      - video-encoder-service-database
+      - video-encoder-service-minio
+
+  video-encoder-service-database:
+    image: postgres:alpine
+    restart: always
+    tty: true
+    volumes:
+      - video_encoder_service_database_data:/var/lib/postgresql/
+    environment:
+      POSTGRES_DB: 'video-encoder-service'
+      POSTGRES_USER: 'video-encoder-service'
+      POSTGRES_PASSWORD: 'video-encoder-service'
+    ports:
+      - "5432:5432"
+    networks:
+      - video-encoder-network
+
+  video-encoder-service-minio:
+    image: minio/minio:latest
+    volumes:
+      - video_encoder_service_minio_data:/data
+    environment:
+      MINIO_ROOT_USER: 'video-encoder-service'
+      MINIO_ROOT_PASSWORD: 'video-encoder-service'
+    ports:
+      - "9000:9000"
+      - "8900:8900"
+    networks:
+      - video-encoder-network
+    command: minio server /data/minio --console-address ":8900"
+
+  video-encoder-service-rabbitmq:
+    image: "rabbitmq:3-management"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "video-encoder-service"
+      RABBITMQ_DEFAULT_PASS: "video-encoder-service"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - video-encoder-network
+
+volumes:
+  video_encoder_service_minio_data:
+  video_encoder_service_database_data:
+
+networks:
+  video-encoder-network:
+    driver: bridge
